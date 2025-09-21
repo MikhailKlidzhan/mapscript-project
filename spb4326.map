@@ -1,0 +1,37 @@
+MAP
+    NAME "spb"
+    PROJECTION
+        "init=epsg:4326"
+    END
+
+    #(30.177446, 59.918528) - (30.338246, 59.982602)
+    EXTENT 30.177446 59.918528 30.338246 59.982602
+
+    WEB
+        METADATA
+	    "ows_enable_request" "*"
+	    "ows_onlineresource" "http://localhost:3007"
+	    "wms_srs" "EPSG:3857 EPSG:4326"
+	    "wms_transparent" "TRUE"
+        END
+    END
+    
+    SIZE 800 800
+    IMAGECOLOR 220 221 239
+
+        LAYER
+            NAME "spb"
+            TYPE POLYGON
+            STATUS ON
+            CONNECTIONTYPE OGR
+            CONNECTION "spb4326.json"
+            DATA "spb"
+            CLASS
+                NAME "colors"
+                STYLE
+                    COLOR [color]
+                END #style
+           END #class
+        END #layer
+  
+END # MAP

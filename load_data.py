@@ -72,7 +72,7 @@ if __name__ == "__main__":
     init_db()
 
     if len(sys.argv) != 4:
-        logger.error("Неверное количество аргументов. Использование: python load_data.py <mapname> <mapfile> <geojsonfile>")
+        logger.error("Неверное количество аргументов. Использование: python3 load_data.py <mapname> <mapfile> <geojsonfile>")
         sys.exit(1)
 
     mapname = sys.argv[1]

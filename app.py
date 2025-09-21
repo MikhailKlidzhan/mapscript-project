@@ -103,8 +103,6 @@ def serve_map(mapname):
         map_server = MapServer(mapstyle_content, geojson_content, mapname)
         response_data, content_type = map_server.render_map(query_string)
 
-        print(f"Сгенерировано изображение размером: {len(response_data)} байт")
-
         if not response_data or len(response_data) == 0:
             logger.error("Не удалось сгенерировать изображение (пустой ответ)")
             return "Не удалось сгенерировать изображение", 500
