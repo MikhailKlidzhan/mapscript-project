@@ -2,7 +2,17 @@ from flask import Flask, request, Response
 import mapscript
 import os
 from database import init_db, get_map_data, get_all_maps
+import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -12,6 +22,7 @@ class MapServer:
         self.mapstyle_content = mapstyle_content
         self.geojson_content = geojson_content
         self.mapname = mapname
+        self.logger = logging.getLogger(f'MapServer.{mapname}')
 
     def render_map(self, query_string):
         # create temp dir
@@ -39,7 +50,7 @@ class MapServer:
 
             # handle query - get status code
             status_code = map_obj.OWSDispatch(ows_request)
-            print(f"OWSDispatch вернул статус: {status_code}")
+            self.logger.info(f"OWSDispatch вернул статус: {status_code}")
             
             # on success, create an image
             if status_code == mapscript.MS_SUCCESS:
@@ -50,6 +61,7 @@ class MapServer:
                     # get image bytes
                     response_data = image.getBytes()
                     content_type = 'image/png'
+                    self.logger.info(f"Успешно сгенерировано изображение размером: {len(response_data)} байт")
                     return response_data, content_type
                 else:
                     raise Exception("Не удалось создать изображение")
@@ -57,6 +69,7 @@ class MapServer:
                 raise Exception(f"Ошибка рендеринга, код: {status_code}")
         
         except Exception as e:
+            self.logger.error(f"Ошибка при рендеринге карты: {str(e)}")
             raise Exception(f"Ошибка при рендеринге карты: {str(e)}")
         
         finally:
@@ -64,20 +77,25 @@ class MapServer:
             try:
                 os.remove(geojson_path)
                 os.remove(mapfile_path)
+                self.logger.debug("Временные файлы удалены")
             
-            except:
-                pass
+            except Exception as e:
+                 self.logger.warning(f"Не удалось удалить временные файлы: {e}")
 
 
 @app.route("/<mapname>", methods=["GET"])
 def serve_map(mapname):
+    logger.info(f"Получен запрос для карты: {mapname}")
+
     # get query params
     query_string = request.query_string.decode("utf-8")
+    logger.debug(f"Query string: {query_string}")
 
     # get data from db
     mapstyle_content, geojson_content = get_map_data(mapname)
 
     if not mapstyle_content or not geojson_content:
+        logger.warning(f"Карта с именем {mapname} не найдена в БД")
         return f"Карта с именем {mapname} не найдена!", 404
     
     # render map
@@ -88,19 +106,24 @@ def serve_map(mapname):
         print(f"Сгенерировано изображение размером: {len(response_data)} байт")
 
         if not response_data or len(response_data) == 0:
+            logger.error("Не удалось сгенерировать изображение (пустой ответ)")
             return "Не удалось сгенерировать изображение", 500
         
+        logger.info(f"Успешно обработан запрос, возвращаем изображение")
+
         response = Response(response_data, content_type=content_type)
         response.headers['Content-Disposition'] = 'inline'
         return response
     
     except Exception as e:
-        return f"Ошибка: {str(e)}", 500
+        logger.error(f"Ошибка при обработке запроса: {str(e)}")
+        return f"Ошибка при генерации карты: {str(e)}", 500
     
 
 @app.route("/")
 def list_maps():
     """Page with all maps available"""
+    logger.info("Запрос главной страницы со списком карт")
     maps = get_all_maps()
 
     html = "<h1>Доступные карты</h1><ul>"
@@ -114,6 +137,7 @@ example_query = "SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX=3359332.801464934
 
 
 if __name__ == "__main__":
+    logger.info("Запуск приложения")
     init_db()
     app.run(host="0.0.0.0", port=3007, debug=True)
 
