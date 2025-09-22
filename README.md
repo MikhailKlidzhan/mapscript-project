@@ -11,7 +11,13 @@
 - Хранение данных: Картостили и GeoJSON данные хранятся в БД
 - Временные файлы: Создаются в директории temp/ во время запросов
 
-## Зависимости
+## Установка и зависимости
+
+Клонируйте репозиторий:
+
+```bash
+git clone https://github.com/MikhailKlidzhan/mapscript-project.git
+```
 
 Установите необходимые зависимости:
 
@@ -30,17 +36,17 @@ sudo apt install python3-mapscript
 1. **Инициализация базы данных**
 
 ```bash
-python -c "from database import init_db; init_db()"
+python3 -c "from database import init_db; init_db()"
 ```
 
 2. **Загрузка примеров карт**
 
 ```bash
 # Загрузка карты в системе координат Web Mercator (EPSG:3857)
-python load_data.py spb3857 spb3857.map spb3857.json
+python3 load_data.py spb3857 spb3857.map spb3857.json
 
 # Загрузка карты в системе координат WGS84 (EPSG:4326)
-python load_data.py spb4326 spb4326.map spb4326.json
+python3 load_data.py spb4326 spb4326.map spb4326.json
 ```
 
 3. **Запуск сервера**
@@ -65,13 +71,13 @@ http://localhost:3007/spb3857?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX=3359
 ## Утилита загрузки данных
 
 ```bash
-python load_data.py <mapname> <mapfile> <geojsonfile>
+python3 load_data.py <mapname> <mapfile> <geojsonfile>
 ```
 
 Пример:
 
 ```bash
-python load_data.py mymap mymap.map mydata.json
+python3 load_data.py mymap mymap.map mydata.json
 ```
 
 ## Структура проекта
