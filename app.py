@@ -70,7 +70,7 @@ class MapServer:
         
         except Exception as e:
             self.logger.error(f"Ошибка при рендеринге карты: {str(e)}")
-            raise Exception(f"Ошибка при рендеринге карты: {str(e)}")
+            raise
         
         finally:
             #  delete tempfiles
